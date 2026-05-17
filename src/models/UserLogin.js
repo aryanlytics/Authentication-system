@@ -32,5 +32,9 @@ userLoginSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
+userLoginSchema.methods.updateLastLogin = async function () {
+  this.lastLogin = Date.now();
+  await this.save();
+
 const loginModel = mongoose.model("Login", userLoginSchema);
 module.exports = loginModel;
