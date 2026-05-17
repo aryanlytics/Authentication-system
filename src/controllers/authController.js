@@ -21,48 +21,38 @@ async function register(req, res) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create user
-    const RegisterUser = await registerModel.create({
+    const newUser = await registerModel.create({
       name,
       email,
       password: hashedPassword,
+      lastLogin: null, // explicitly set
     });
 
     // Generate JWT
-    const acsessToken = jwt.sign(
-      {
-        id: RegisterUser._id,
-      },
-      config.JWT_SECRET,
-      {
-        expiresIn: "15m",
-      },
-    );
-    const refreshToken = jwt.sign(
-      {
-        id: RegisterUser._id,
-      },
-      config.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      },
-    );
+    const accessToken = jwt.sign({ id: newUser._id }, config.JWT_SECRET, {
+      expiresIn: "15m",
+    });
+
+    const refreshToken = jwt.sign({ id: newUser._id }, config.JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(201).json({
       success: true,
       message: "User registered successfully",
       user: {
-        id: RegisterUser._id,
-        name: RegisterUser.name,
-        email: RegisterUser.email,
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
       },
-      acsessToken,
+      accessToken,
     });
   } catch (error) {
     console.error(error);
@@ -101,10 +91,10 @@ async function login(req, res) {
     user.lastLogin = Date.now();
     await user.save();
 
-    // Generate tokens
     const accessToken = jwt.sign({ id: user._id }, config.JWT_SECRET, {
       expiresIn: "15m",
     });
+
     const refreshToken = jwt.sign({ id: user._id }, config.JWT_SECRET, {
       expiresIn: "7d",
     });
@@ -123,6 +113,7 @@ async function login(req, res) {
         id: user._id,
         name: user.name,
         email: user.email,
+        lastLogin: user.lastLogin,
       },
       accessToken,
     });
@@ -135,4 +126,4 @@ async function login(req, res) {
   }
 }
 
-((module.exports = register), l);
+module.exports = { register, login };

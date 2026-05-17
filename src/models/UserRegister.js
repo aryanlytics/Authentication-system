@@ -28,6 +28,7 @@ const userRegisterSchema = new mongoose.Schema(
     createdAt: {
       type: Date,
       default: Date.now,
+      select: false,
     },
     lastLogin: {
       type: Date,
