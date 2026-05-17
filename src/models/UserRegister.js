@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
 
 const userRegisterSchema = new mongoose.Schema(
   {
@@ -30,9 +29,13 @@ const userRegisterSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    lastLogin: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 );
 
-const registerModel = mongoose.model("UserRegister", userRegisterSchema);
+const registerModel = mongoose.model("RegisterUser", userRegisterSchema);
 module.exports = registerModel;
